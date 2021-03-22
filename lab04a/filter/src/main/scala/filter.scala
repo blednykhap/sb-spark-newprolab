@@ -1,9 +1,12 @@
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
+import org.apache.log4j.{Level, Logger}
 
 object filter {
   def main(args: Array[String]): Unit = {
+
+    Logger.getLogger("org").setLevel(Level.ALL)
 
     println("************** start job **************")
     println()
@@ -17,8 +20,12 @@ object filter {
     import spark.implicits._
 
     val topic_name = spark.conf.get("spark.filter.topic_name") // lab04_input_data
-    val offset = spark.conf.get("spark.filter.offset")  // earliest
+    var offset = spark.conf.get("spark.filter.offset")  // earliest
     val output_dir_prefix = spark.conf.get("spark.filter.output_dir_prefix")
+
+    if (offset != "earliest") {
+      offset = s"""{"$topic_name":{"0":$offset}}"""
+    }
 
     println("******* get variables *******")
     println(s"topic_name: $topic_name")
