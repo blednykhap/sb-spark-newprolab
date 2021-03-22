@@ -102,7 +102,6 @@ object filter {
       .json(s"$output_dir_prefix/view/")
 
     println("******* write k_view_data finished *******")
-      .show(2, 200, true)
     println()
 
     k_buy_date
