@@ -80,14 +80,14 @@ object filter {
     k_view_data
       //.repartition($"p_date")
       .write
-      .mode("overwrite")
+      //.mode("overwrite")
       .partitionBy("p_date")
       .json(s"$output_dir_prefix/view/")
 
     k_buy_date
       //.repartition($"p_date")
       .write
-      .mode("overwrite")
+      //.mode("overwrite")
       .partitionBy("p_date")
       .json(s"$output_dir_prefix/buy/")
 
