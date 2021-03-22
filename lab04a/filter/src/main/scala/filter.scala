@@ -16,7 +16,7 @@ object filter {
     val spark = SparkSession
       .builder()
       .appName("Kafka Lab04a Andrey Blednykh")
-      .master("yarn")
+//      .master("yarn")
       .getOrCreate()
 
     import spark.implicits._
