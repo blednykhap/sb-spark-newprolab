@@ -8,8 +8,8 @@ lazy val commonSettings = Seq(
 
 lazy val commonDependencies = Seq(
   "org.apache.spark" %% "spark-core" % "2.4.7",
-  "org.apache.spark" %% "spark-sql" % "2.4.7"/*,
-  "org.apache.spark" %% "spark-sql-kafka-0-10" % "2.4.7"*/
+  "org.apache.spark" %% "spark-sql" % "2.4.7",
+  "org.apache.spark" %% "spark-sql-kafka-0-10" % "2.4.7"
 )
 
 lazy val root = (project in file(".")).

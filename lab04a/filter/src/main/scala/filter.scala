@@ -13,7 +13,6 @@ object filter {
     val spark = SparkSession
       .builder()
       .appName("Kafka Lab04a Andrey Blednykh")
-      .master("yarn")
       .getOrCreate()
 
     import spark.implicits._
@@ -78,16 +77,14 @@ object filter {
       .filter("event_type = 'buy'")
 
     k_view_data
-      //.repartition($"p_date")
       .write
-      //.mode("overwrite")
+      .mode("overwrite")
       .partitionBy("p_date")
       .json(s"$output_dir_prefix/view/")
 
     k_buy_date
-      //.repartition($"p_date")
       .write
-      //.mode("overwrite")
+      .mode("overwrite")
       .partitionBy("p_date")
       .json(s"$output_dir_prefix/buy/")
 
