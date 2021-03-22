@@ -6,9 +6,11 @@ import org.apache.log4j.{Level, Logger}
 object filter {
   def main(args: Array[String]): Unit = {
 
-    Logger.getLogger("org").setLevel(Level.ALL)
+    //val rootLogger = Logger.getRootLogger()
+    val logger = Logger.getLogger(getClass.getName)
+    //rootLogger.setLevel(Level.ERROR)
 
-    println("************** start job **************")
+    logger.info("************** start job (from logger) **************");
     println()
 
     val spark = SparkSession
