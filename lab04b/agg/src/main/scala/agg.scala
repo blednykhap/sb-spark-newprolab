@@ -87,6 +87,7 @@ object agg {
       val kafkaOutputParams = Map(
         "kafka.bootstrap.servers" -> "spark-master-1:6667",
         "topic" -> output_topic_name,
+        "checkpointLocation" -> "streaming/checkpoint/",
         "truncate" -> "false"
       )
 
