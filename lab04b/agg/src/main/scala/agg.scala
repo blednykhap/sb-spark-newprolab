@@ -91,7 +91,7 @@ object agg {
         "truncate" -> "false"
       )
 
-      sdf_kafka
+      join_data
         .select(col("start_ts").cast("string").alias("key"),
           to_json(struct("start_ts", "end_ts", "revenue", "visitors", "purchases", "aov")).alias("value"))
         .write
