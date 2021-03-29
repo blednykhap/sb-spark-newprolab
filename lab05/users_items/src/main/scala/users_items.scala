@@ -7,13 +7,6 @@ object users_items {
 
     val spark = SparkSession.builder()
       .appName("UsersItems Lab05 DE")
-      /*.master("yarn")
-      .config("spark.submit.deployMode", "cluster")
-      .config("spark.driver.memory", "6g")
-      .config("spark.driver.cores", "3")
-      .config("spark.executor.instances", "8")
-      .config("spark.executor.memory", "6g")
-      .config("spark.executor.cores", "3") */
       .getOrCreate()
 
     val itemsUpdate = spark.conf.get("spark.users_items.update")
@@ -32,7 +25,7 @@ object users_items {
 
       try {
         val dirs = fs.listStatus(new Path(path))
-          .filter(_.isDir)
+          .filter(_.isDirectory)
           .map(_.getPath.getName.toInt)
 
         if (dirs.size >= 1) {
