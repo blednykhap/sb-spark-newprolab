@@ -1,5 +1,6 @@
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types._
 import org.apache.hadoop.fs.{FileSystem, Path}
 
 object users_items {
@@ -7,6 +8,7 @@ object users_items {
 
     val spark = SparkSession.builder()
       .appName("UsersItems Lab05 DE")
+      .config("spark.sql.session.timeZone", "UTC")
       .getOrCreate()
 
     val itemsUpdate = spark.conf.get("spark.users_items.update")
@@ -16,7 +18,8 @@ object users_items {
     val events = spark.read.json(s"$inputDir/*/*/*.json")
 
     val new_max_date = events
-      .agg(max(col("date").cast("integer")))
+      .withColumn("timestamp", date_format((col("timestamp") / 1000).cast(TimestampType), "yyyyMMdd"))
+      .agg(max(col("timestamp").cast("integer")))
       .take(1)(0).getInt(0)
 
     def get_old_max_date(path: String) : String = {
