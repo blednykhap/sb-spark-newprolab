@@ -60,7 +60,6 @@ object agg {
         .withColumn("gregRight", col("gregLeft") + expr("INTERVAL 1 HOURS"))
         .withColumn("gregShortRight", date_format(col("gregRight"), "yyyyMMddHH"))
         .withColumn("unixRight", unix_timestamp(col("gregShortRight"),"yyyyMMddHH"))
-        //.drop(col("gregShortLeft"))
         .drop(col("gregLeft"))
         .drop(col("gregRight"))
         .drop(col("gregShortRight"))
@@ -97,14 +96,16 @@ object agg {
         .write
         .format("kafka")
         .options(kafkaOutputParams)
-        .mode("update")
         .save()
     }
 
     sdf_kafka
       .writeStream
+      // Below solution for structured streaming exception:
+      // Append output mode not supported for streaming aggregations
       .foreachBatch(foreachBatchFunction _)
-      .trigger(Trigger.ProcessingTime("10 seconds"))
+      .trigger(Trigger.ProcessingTime("60 seconds"))
+      .outputMode("update")
       .start()
       .awaitTermination()
 
