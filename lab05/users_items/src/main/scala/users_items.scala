@@ -32,7 +32,7 @@ object users_items {
           .map(_.getPath.getName.toInt)
 
         if (dirs.size >= 1) {
-          dirs.reduceLeft(_ max _).toString
+          dirs.reduceLeft(_ max _).toString // find max element of array
         } else {
           ""
         }
@@ -59,7 +59,7 @@ object users_items {
       val users_items = new_users_items
         .union(old_users_items)
         .groupBy(col("uid"))
-        .sum(new_users_items.columns.drop(1): _*)
+        .sum(new_users_items.columns.drop(1): _*)  // drop first column (uid)
 
       users_items
         .write
