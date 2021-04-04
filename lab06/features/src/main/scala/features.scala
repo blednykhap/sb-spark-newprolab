@@ -56,6 +56,7 @@ object features {
 
     val domain_features_df = users_domains
       .withColumn("domain_features", regexp_replace(map(mappedColumn: _*).cast(StringType), "t -> ", ""))
+      .select("uid", "domain_features")
 
     val timing_df = based_log_df
       .withColumn("greg_date", to_timestamp(col("timestamp")/1000))
