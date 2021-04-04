@@ -127,6 +127,10 @@ object features {
 
     result_df
       .write
+      .mode("overwrite")
       .parquet("/user/andrey.blednykh2/features")
+
+    spark.stop()
+
   }
 }
