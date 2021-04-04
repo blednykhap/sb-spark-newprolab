@@ -96,8 +96,28 @@ object features {
         when((hour(col("greg_date")) >= 18) && (hour(col("greg_date")) <= 23), 1).otherwise(0))
       .drop("domain", "timestamp", "greg_date")
 
+    val timing_agg = timing_df
+      .groupBy("uid")
+      .agg(sum(col("web_day_mon")).alias("web_day_mon"),sum(col("web_day_tue")).alias("web_day_tue"),
+        sum(col("web_day_wed")).alias("web_day_wed"),sum(col("web_day_thu")).alias("web_day_thu"),
+        sum(col("web_day_fri")).alias("web_day_fri"),sum(col("web_day_sat")).alias("web_day_sat"),
+        sum(col("web_day_sun")).alias("web_day_sun"),sum(col("web_hour_0")).alias("web_hour_0"),
+        sum(col("web_hour_1")).alias("web_hour_1"),sum(col("web_hour_2")).alias("web_hour_2"),
+        sum(col("web_hour_3")).alias("web_hour_3"),sum(col("web_hour_4")).alias("web_hour_4"),
+        sum(col("web_hour_5")).alias("web_hour_5"),sum(col("web_hour_6")).alias("web_hour_6"),
+        sum(col("web_hour_7")).alias("web_hour_7"),sum(col("web_hour_8")).alias("web_hour_8"),
+        sum(col("web_hour_9")).alias("web_hour_9"),sum(col("web_hour_10")).alias("web_hour_10"),
+        sum(col("web_hour_11")).alias("web_hour_11"),sum(col("web_hour_12")).alias("web_hour_12"),
+        sum(col("web_hour_13")).alias("web_hour_13"),sum(col("web_hour_14")).alias("web_hour_14"),
+        sum(col("web_hour_15")).alias("web_hour_15"),sum(col("web_hour_16")).alias("web_hour_16"),
+        sum(col("web_hour_17")).alias("web_hour_17"),sum(col("web_hour_18")).alias("web_hour_18"),
+        sum(col("web_hour_19")).alias("web_hour_19"),sum(col("web_hour_20")).alias("web_hour_20"),
+        sum(col("web_hour_21")).alias("web_hour_21"),sum(col("web_hour_22")).alias("web_hour_22"),
+        sum(col("web_hour_23")).alias("web_hour_23"),sum(col("web_fraction_work_hours")).alias("web_fraction_work_hours"),
+        sum(col("web_fraction_evening_hours")).alias("web_fraction_evening_hours") )
+
     val weblog_futures = domain_features_df
-      .join(timing_df, Seq("uid"), "inner")
+      .join(timing_agg, Seq("uid"), "inner")
 
     val users_items = spark.read.parquet("/user/andrey.blednykh2/users-items/20200429")
 
