@@ -7,13 +7,14 @@ object features {
 
     val spark = SparkSession.builder()
       .appName("Features Lab06 DE")
-      .master("yarn")
+      //.master("yarn")
       //.config("spark.submit.deployMode", "cluster")
       .config("spark.driver.memory", "9g")
       .config("spark.driver.cores", "3")
       .config("spark.executor.instances", "6")
-      .config("spark.executor.memory", "9g")
-      .config("spark.executor.cores", "3")
+      .config("spark.executor.memory", "12g")
+      .config("spark.executor.cores", "6")
+      //.config("spark.sql.shuffle.partitions", "81")
       .config("spark.sql.session.timeZone", "UTC")
       .getOrCreate()
 
@@ -39,26 +40,20 @@ object features {
       .select("domain")
       .sort("domain")
 
-    val based_log_df = parsed_logs
+    val sorted_logs = parsed_logs
       .join(sorted_domain, Seq("domain"), "inner")
-      .cache()
 
-    val users_domains = based_log_df
+    val users_domains = sorted_logs
       .select("uid", "domain")
       .groupBy("uid")
       .pivot("domain")
       .agg(count(lit(1)))
       .na.fill(0)
 
-    val screenColumns = users_domains.columns.map(t => ("`" + t.toLowerCase + "`"))
-    val dfWithNewHead = users_domains.toDF(screenColumns: _*)
-    val mappedColumn = dfWithNewHead.columns.drop(1).flatMap(c => Seq(lit('t'), col(c)))
+    val ecran_result = users_domains.select(col("uid"),
+      array(users_domains.columns.drop(1).map(c => col(s"`$c`")):_*).alias("domain_features"))
 
-    val domain_features_df = users_domains
-      .withColumn("domain_features", regexp_replace(map(mappedColumn: _*).cast(StringType), "t -> ", ""))
-      .select("uid", "domain_features")
-
-    val timing_df = based_log_df
+    val timing_df = parsed_logs
       .withColumn("greg_date", to_timestamp(col("timestamp")/1000))
       .withColumn("web_day_mon", when(date_format(col("greg_date"), "u") === 1, 1).otherwise(0))
       .withColumn("web_day_tue", when(date_format(col("greg_date"), "u") === 2, 1).otherwise(0))
@@ -91,11 +86,11 @@ object features {
       .withColumn("web_hour_21", when(hour(col("greg_date")) === 21, 1).otherwise(0))
       .withColumn("web_hour_22", when(hour(col("greg_date")) === 22, 1).otherwise(0))
       .withColumn("web_hour_23", when(hour(col("greg_date")) === 23, 1).otherwise(0))
-      .withColumn("web_fraction_work_hours",
+      .withColumn("visit_work_hours",
         when((hour(col("greg_date")) >= 9) && (hour(col("greg_date")) <= 17), 1).otherwise(0))
-      .withColumn("web_fraction_evening_hours",
+      .withColumn("visit_evening_hours",
         when((hour(col("greg_date")) >= 18) && (hour(col("greg_date")) <= 23), 1).otherwise(0))
-      .drop("domain", "timestamp", "greg_date")
+    //   .drop("domain", "timestamp", "greg_date")
 
     val timing_agg = timing_df
       .groupBy("uid")
@@ -114,19 +109,26 @@ object features {
         sum(col("web_hour_17")).alias("web_hour_17"),sum(col("web_hour_18")).alias("web_hour_18"),
         sum(col("web_hour_19")).alias("web_hour_19"),sum(col("web_hour_20")).alias("web_hour_20"),
         sum(col("web_hour_21")).alias("web_hour_21"),sum(col("web_hour_22")).alias("web_hour_22"),
-        sum(col("web_hour_23")).alias("web_hour_23"),sum(col("web_fraction_work_hours")).alias("web_fraction_work_hours"),
-        sum(col("web_fraction_evening_hours")).alias("web_fraction_evening_hours") )
+        sum(col("web_hour_23")).alias("web_hour_23"),
+        sum(col("visit_work_hours")).alias("visit_work_hours"),
+        sum(col("visit_evening_hours")).alias("visit_evening_hours"),
+        count(lit(1)).alias("visit_count")
+      )
 
-    val weblog_futures = domain_features_df
-      .join(timing_agg, Seq("uid"), "inner")
+    val timing_frac = timing_agg
+      .withColumn("web_fraction_work_hours", col("visit_work_hours")/col("visit_count"))
+      .withColumn("web_fraction_evening_hours", col("visit_evening_hours")/col("visit_count"))
+      .drop("visit_work_hours", "visit_evening_hours", "visit_count")
+
+    val weblog_futures = ecran_result.join(timing_frac, Seq("uid"), "inner")
 
     val users_items = spark.read.parquet("/user/andrey.blednykh2/users-items/20200429")
 
-    val result_df = users_items
+    val result_dataframe = users_items
       .join(weblog_futures, Seq("uid"), "full")
       .na.fill(0)
 
-    result_df
+    result_dataframe
       .write
       .mode("overwrite")
       .parquet("/user/andrey.blednykh2/features")
