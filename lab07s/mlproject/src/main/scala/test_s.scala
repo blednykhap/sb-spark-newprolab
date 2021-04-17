@@ -4,7 +4,7 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.streaming.Trigger
 import org.apache.spark.sql.types.{ArrayType, LongType, StringType, StructField, StructType}
 
-object test {
+object test_s {
   def main(args: Array[String]): Unit = {
 
     val spark = SparkSession
